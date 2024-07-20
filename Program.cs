@@ -26,6 +26,8 @@
 //Выведите результаты на консоль или сохраните их в файлы.
 
 
+using System.Reflection.Metadata;
+
 public interface IReportBuilder
 {
     public void SetTitle(string title);
@@ -66,7 +68,7 @@ class HtmlReportBuilder : IReportBuilder
 
     public void SetTitle(string title)
     {
-        report.Title = title;
+        report.Title = $"HTML Report - {title}";
     }
 
     public void SetIntroduction(string introduction)
@@ -106,7 +108,7 @@ public class PdfReportBuilder : IReportBuilder
 
     public void SetTitle(string title)
     {
-        report.Title = title;
+        report.Title = $"PDF Report - {title}";
     }
 
     public void SetIntroduction(string introduction)
@@ -147,7 +149,7 @@ public class TextReportBuilder : IReportBuilder
 
     public void SetTitle(string title)
     {
-        report.Title = title;
+        report.Title = $"Text Report - {title}";
     }
 
     public void SetIntroduction(string introduction)
@@ -201,10 +203,50 @@ class Program
         ReportDirector director = new ReportDirector();
 
         IReportBuilder reportBuilder = new HtmlReportBuilder();
-
         director.Construct(reportBuilder);
-        Report report = reportBuilder.GetReport();
-        Console.WriteLine(report);
+        Report htmlReport = reportBuilder.GetReport();
+        Console.WriteLine("HTML Report:");
+        Console.WriteLine(htmlReport);
+
+
+        string htmlFilePath = "report.html";
+        File.WriteAllText(htmlFilePath, htmlReport.ToString());
+        Console.WriteLine($"HTML Report сохранен в файл: {htmlFilePath}");
+        Console.WriteLine("----------------------------");
+
+
+        IReportBuilder pdfReportBuilder = new PdfReportBuilder();
+        director.Construct(pdfReportBuilder);
+        Report pdfReport = pdfReportBuilder.GetReport();
+        Console.WriteLine("PDF Report:");
+        Console.WriteLine(pdfReport);
+
+
+        string pdfFilePath = "report.pdf";
+        //using (FileStream fs = new FileStream(pdfFilePath, FileMode.Create))
+        //{
+        //    Document document = new Document();
+        //    PdfWriter.GetInstance(document, fs);
+        //    document.Open();
+        //    document.Add(new Paragraph(pdfReport.ToString()));
+        //    document.Close();
+        //}
+
+        Console.WriteLine($"PDF Report сохранен в файл: {pdfFilePath}");
+        Console.WriteLine("----------------------------");
+
+        
+        IReportBuilder textReportBuilder = new TextReportBuilder();
+        director.Construct(textReportBuilder);
+        Report textReport = textReportBuilder.GetReport();
+        Console.WriteLine("Text Report:");
+        Console.WriteLine(textReport);
+
+
+        string textFilePath = "report.txt";
+        File.WriteAllText(textFilePath, textReport.ToString());
+        Console.WriteLine($"Text Report сохранен в файл: {textFilePath}");
+        Console.WriteLine("----------------------------");
     }
 }
 
