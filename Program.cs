@@ -27,6 +27,10 @@
 
 
 using System.Reflection.Metadata;
+using System.IO;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
 
 public interface IReportBuilder
 {
@@ -35,7 +39,7 @@ public interface IReportBuilder
     public void SetBody(string body);
     public void SetConclusion(string conclusion);
     public void SetAppendix(string appendix);
-    Report GetReport();
+    public Report GetReport();
 }
 
 public class Report
@@ -185,11 +189,12 @@ public class ReportDirector
 {
     public void Construct(IReportBuilder builder)
     {
-        builder.SetTitle("Report");
-        builder.SetIntroduction("Introduction of tre Report.");
-        builder.SetBody("Body of tre Report.");
-        builder.SetConclusion("Conclusion of tre Report.");
-        builder.SetAppendix("Appendix .");
+        var raport = builder.GetReport();
+        builder.SetTitle(raport.Title);
+        builder.SetIntroduction(raport.Introduction);
+        builder.SetBody(raport.Body);
+        builder.SetConclusion(raport.Conclusion);
+        builder.SetAppendix(raport.Appendix);
     }
 }
 
@@ -203,6 +208,13 @@ class Program
         ReportDirector director = new ReportDirector();
 
         IReportBuilder reportBuilder = new HtmlReportBuilder();
+        var r1 = reportBuilder.GetReport();
+        r1.Title = "HTML Title_1";
+        r1.Introduction = "Introduction_1";
+        r1.Body = "Body_1";
+        r1.Conclusion = "Conclusion_1";
+        r1.Appendix = "Appendix_1, appendix_2";
+
         director.Construct(reportBuilder);
         Report htmlReport = reportBuilder.GetReport();
         Console.WriteLine("HTML Report:");
@@ -215,7 +227,15 @@ class Program
         Console.WriteLine("----------------------------");
 
 
+
+
         IReportBuilder pdfReportBuilder = new PdfReportBuilder();
+        var r2 = pdfReportBuilder.GetReport();
+        r2.Title = "PDF Title_1";
+        r2.Introduction = "Introduction_1";
+        r2.Body = "Body_1";
+        r2.Conclusion = "Conclusion_1";
+        r2.Appendix = "Appendix_1, appendix_2";
         director.Construct(pdfReportBuilder);
         Report pdfReport = pdfReportBuilder.GetReport();
         Console.WriteLine("PDF Report:");
@@ -223,20 +243,32 @@ class Program
 
 
         string pdfFilePath = "report.pdf";
-        //using (FileStream fs = new FileStream(pdfFilePath, FileMode.Create))
-        //{
-        //    Document document = new Document();
-        //    PdfWriter.GetInstance(document, fs);
-        //    document.Open();
-        //    document.Add(new Paragraph(pdfReport.ToString()));
-        //    document.Close();
-        //}
+        using (FileStream fs = new FileStream(pdfFilePath, FileMode.OpenOrCreate))
+        {
+            using (PdfWriter writer = new PdfWriter(fs))
+            {
+                using (PdfDocument pdf = new PdfDocument(writer))
+                {
+                    using (iText.Layout.Document document = new iText.Layout.Document(pdf))
+                    {
+                        document.Add(new Paragraph(pdfReport.ToString()));
+                    }
+                }
+            }
+        }
+
 
         Console.WriteLine($"PDF Report сохранен в файл: {pdfFilePath}");
         Console.WriteLine("----------------------------");
 
-        
+
         IReportBuilder textReportBuilder = new TextReportBuilder();
+        var r3 = textReportBuilder.GetReport();
+        r3.Title = "Text Title_1";
+        r3.Introduction = "Introduction_1";
+        r3.Body = "Body_1";
+        r3.Conclusion = "Conclusion_1";
+        r3.Appendix = "Appendix_1, appendix_2";
         director.Construct(textReportBuilder);
         Report textReport = textReportBuilder.GetReport();
         Console.WriteLine("Text Report:");
